@@ -1,0 +1,9 @@
+rule bwa:
+    input:
+        "NC_000962.3.fasta",
+        "/home/dieterbest/Analysis/varpipe4/data/ERR552797_30percent_1.fq.gz",
+        "/home/dieterbest/Analysis/varpipe4/data/ERR552797_30percent_2.fq.gz"	
+    output:
+        "mapped_reads/ERR552797.bam"
+    shell:
+        "bwa mem {input} | samtools view -Sb - > {output}"

@@ -1,0 +1,69 @@
+# Snakemake file for BWA aligner
+
+threads=4
+
+# Define the input and output files
+SAMPLES = ["ERR552797"]  # Add your sample names here
+reference = "NC_000962.3.fasta"
+
+rule clean:
+     shell:
+        "rm *~ *.fasta.*"
+        
+#expand("sorted/{sample}.bam.bai", sample=SAMPLES)
+#"calls/all.vcf"
+rule all:
+    input:
+        "plots/quals.svg"
+        
+rule index_reference:
+    input:
+        reference
+    shell:
+        "bwa index {input}"
+
+rule bwa_map:
+    input:
+        reference,              
+        "/home/dieterbest/Analysis/varpipe4/data/{sample}_30percent_1.fq.gz",
+        "/home/dieterbest/Analysis/varpipe4/data/{sample}_30percent_2.fq.gz"
+    output:
+        "mapped/{sample}.bam"
+    shell:
+        "bwa mem -t threads {input} | samtools view -S -b - > {output}"
+
+rule samtools_sort:
+    input:
+        "mapped/{sample}.bam"
+    output:
+        "sorted/{sample}.bam"
+    shell:
+        "samtools sort --threads threads -o {output} {input}"
+
+rule samtools_index:
+    input:
+        "sorted/{sample}.bam"
+    output:
+        "sorted/{sample}.bam.bai"
+    shell:
+        "samtools index {input}"
+
+
+rule bcftools_call:
+    input:
+        ref=reference,
+        bam=expand("sorted/{sample}.bam", sample=SAMPLES),
+        bai=expand("sorted/{sample}.bam.bai", sample=SAMPLES)
+    output:
+        "calls/all.vcf"
+    shell:
+        "bcftools mpileup -f {input.ref} {input.bam} | bcftools call --ploidy 1 -mv - > {output}"
+
+rule plot_quals:
+    input:
+        "calls/all.vcf"
+    output:
+        "plots/quals.svg"
+    script:
+        "scripts/plot_quals.py"
+        

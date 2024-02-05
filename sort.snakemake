@@ -1,0 +1,7 @@
+rule samtools_sort:
+    input:
+        "mapped/{sample}.bam"
+    output:
+        "sorted/{sample}.bam"
+    shell:
+        "samtools sort --threads threads -o {output} {input}"

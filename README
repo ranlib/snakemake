@@ -1,0 +1,4 @@
+snakemake -c1 -s align.snakemake index_reference
+snakemake -c1 -s align.snakemake
+snakemake -c1 -s sort.snakemake sorted/ERR552797.bam 
+snakemake --nocolor -p -n -c1 -s align.snakemake
